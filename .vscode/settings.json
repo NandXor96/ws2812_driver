@@ -1,0 +1,182 @@
+{
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/linux/**",
+        "${default}",
+        "/usr/include/x86_64-linux-gnu",
+        "${workspaceFolder}/linux/include",
+        "${workspaceFolder}/linux/arch/x86/include",
+        "${workspaceFolder}/linux/arch/x86/include/generated"
+    ],
+    "C_Cpp.default.forcedInclude": [
+        "${workspaceFolder}/BUILD/include/generated/autoconf.h"
+    ],
+    "C_Cpp.default.defines": [
+        "__GNUC__",
+        "__KERNEL__"
+    ],
+    "C_Cpp.default.cStandard": "c11",
+    "C_Cpp.default.systemIncludePath": [
+        "/home/vscode/workspace/linux",
+        "./",
+        "../../",
+        "${default}"
+    ],
+    "files.associations": {
+        "*.h": "c",
+        "*.c": "c"
+    },
+    "[dockerfile]": {
+        "editor.defaultFormatter": "ms-azuretools.vscode-docker",
+        "editor.formatOnSave": true,
+        "editor.quickSuggestions": {
+            "strings": true
+        }
+    },
+    "[c]": {
+        "editor.detectIndentation": false,
+        "editor.insertSpaces": false,
+        "editor.tabSize": 4,
+        "editor.rulers": [
+            80,
+            100
+        ]
+    },
+    "terminal.integrated.gpuAcceleration": "off",
+    "terminal.integrated.allowChords": false,
+    "textmarker.highlightColors": [
+        "darkolivegreen",
+        "darkgoldenrod",
+        "darkmagenta",
+        "darkslateblue",
+        "darkslategray",
+        "darkviolet",
+        "darkblue",
+        "darkturquoise",
+        "darkgray",
+        "darkkhaki",
+        "darkorange",
+        "darksalmon",
+        "darkseagreen"
+    ],
+    "textmarker.defaultHighlightColor": "gray",
+    "textmarker.enableTelemetry": false,
+    "editor.mouseWheelZoom": true,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "xaver.clang-format",
+    "clang-format.executable": "clang-format",
+    "clang-format.style": "file:/home/vscode/workspace/linux/.clang-format",
+    "cmake.configureOnOpen": false,
+    "cmake.configureOnEdit": false,
+    "cmake.automaticReconfigure": false,
+    "[shellscript]": {
+        "editor.defaultFormatter": "foxundermoon.shell-format"
+    },
+    "psi-header.changes-tracking": {
+        "isActive": true,
+        "include": [
+            "cpp",
+            "c",
+            "h"
+        ],
+        "includeGlob": [
+            "/home/vscode/workspace/user_programs/**/*.cpp",
+            "/home/vscode/workspace/user_programs/**/*.c",
+            "/home/vscode/workspace/user_programs/**/*.h"
+        ],
+        "exclude": [
+            "markdown",
+            "json",
+            "shellscript"
+        ],
+        "excludeGlob": [
+            "/home/vscode/workspace/linux/**/*",
+            "/home/vscode/workspace/buildroot/**/*",
+            "/home/vscode/workspace/docs/**/*",
+            "/home/vscode/workspace/modules/**/*",
+            "/home/vscode/workspace/rootfs/**/*",
+            "/home/vscode/workspace/temp/**/*"
+        ],
+        "autoHeader": "autoSave",
+        "enforceHeader": true,
+        "replace": [
+            "@file",
+            "@date",
+            "(c)"
+        ],
+        "updateLicenseVariables": false
+    },
+    "psi-header.variables": [
+        [
+            "author",
+            "Erik Appel, Kristian Minderer"
+        ],
+        [
+            "url",
+            "https://git.fh-muenster.de"
+        ]
+    ],
+    "psi-header.lang-config": [
+        {
+            "language": "cpp",
+            "begin": "/*",
+            "prefix": " * ",
+            "suffix": " *",
+            "lineLength": 80,
+            "end": " */",
+            "forceToTop": true,
+            "blankLinesAfter": 1,
+            "beforeHeader": [],
+            "afterHeader": [],
+            "rootDirFileName": "/home/vscode/workspace/user_programs/compile.sh",
+            "modAuthor": "Modified By:",
+            "modDate": "Last Modified:",
+            "modDateFormat": "dd/MM/yyyy hh:nn:ss",
+            "replace": [
+                "Filename:",
+                "Project"
+            ],
+            "ignoreLines": []
+        },
+        {
+            "language": "c",
+            "begin": "/**",
+            "prefix": " * ",
+            "suffix": " *",
+            "lineLength": 80,
+            "end": " */",
+            "forceToTop": true,
+            "blankLinesAfter": 1,
+            "beforeHeader": [],
+            "afterHeader": [],
+            "rootDirFileName": "/home/vscode/workspace/user_programs/compile.sh",
+            "modAuthor": "Modified By:",
+            "modDate": "Last Modified:",
+            "modDateFormat": "dd/MM/yyyy hh:nn:ss",
+            "replace": [
+                "Filename:",
+                "Project"
+            ],
+            "ignoreLines": []
+        }
+    ],
+    "psi-header.templates": [
+        {
+            "language": "*",
+            "template": [
+                "@file <<filename>>",
+                "@brief TODO: Give a brief description about the file and its functionality",
+                "@date  <<filecreated('dddd Do-MMMM-YYYY')>>",
+                "Document class: public",
+                "(c) <<year>> <<author>>, <<url>>"
+            ]
+        }
+    ],
+    "cmake.sourceDirectory": "/home/vscode/workspace/user_programs",
+    "[jsonc]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[ignore]": {
+        "editor.defaultFormatter": "foxundermoon.shell-format"
+    },
+    "debug.allowBreakpointsEverywhere": true
+}

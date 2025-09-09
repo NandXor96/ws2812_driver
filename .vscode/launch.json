@@ -1,0 +1,98 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) Start Kernel in QEMU with buildroot fs",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/usr/bin/qemu-system-x86_64",
+            "args": [
+                "-smp",
+                "$(nproc),sockets=1,cores=$(nproc),threads=1",
+                "-s", //Open a gdbserver on TCP port 1234
+                "-S",
+                "-usb",
+                "-device",
+                "usb-host,vendorid=0xcafe,productid=0x1234",
+                "-device", // Zeile wird zwei mal benötigt um zwei Pico's durchzureichen
+                "usb-host,vendorid=0xcafe,productid=0x1234",
+                "-m", //Set the VM memory in MB
+                "512",
+                "-drive",
+                "file=${workspaceFolder}/payloads/images/rootfs.ext2,if=virtio,format=raw",
+                "-kernel",
+                "${workspaceFolder}/linux/arch/x86_64/boot/bzImage",
+                "-append",
+                "nokaslr, console=ttyS0, root=/dev/vda net.ifnames=0 biosdevname=0",
+            ],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false
+        },
+        {
+            "name": "(gdb) Attach to QEMU Kernel",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/linux/vmlinux",
+            "args": [],
+            "stopAtEntry": false,
+            "targetArchitecture": "x86_64",
+            "cwd": "${workspaceFolder}/linux/",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerServerAddress": "${env:HOSTNAME}:1234",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+            ],
+            "sourceFileMap": {
+                "${workspaceFolder}/linux": {
+                    "editorPath": "${workspaceFolder}/linux",
+                    "useForBreakpoints": true
+                }
+            },
+            "logging": {
+                "engineLogging": true
+            },
+            "hardwareBreakpoints": {
+                "require": true,
+                "limit": 100
+            }
+        },
+        {
+            "name": "(gdb) Start Kernel in QEMU with buildroot fs no wait",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/usr/bin/qemu-system-x86_64",
+            "args": [
+                "-smp",
+                "$(nproc),sockets=1,cores=$(nproc),threads=1",
+                "-s", //Open a gdbserver on TCP port 1234
+                "-usb",
+                "-device",
+                "usb-host,vendorid=0xcafe,productid=0x1234",
+                "-device", // Zeile wird zwei mal benötigt um zwei Pico's durchzureichen
+                "usb-host,vendorid=0xcafe,productid=0x1234",
+                "-m", //Set the VM memory in MB
+                "512",
+                "-drive",
+                "file=${workspaceFolder}/payloads/images/rootfs.ext2,if=virtio,format=raw",
+                "-kernel",
+                "${workspaceFolder}/linux/arch/x86_64/boot/bzImage",
+                "-append",
+                "nokaslr, console=ttyS0, root=/dev/vda net.ifnames=0 biosdevname=0",
+                "-k",
+                "de",
+            ],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false
+        },
+    ]
+}

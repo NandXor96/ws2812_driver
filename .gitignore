@@ -1,0 +1,11 @@
+linux
+buildroot/**
+user_programs/build/**
+modules/*/build/**
+temp/**
+rootfs/**
+payloads/images/bzImage
+payloads/images/rootfs.ext2
+rp2040/**/build/**
+doxygen
+doxygen_config.bak

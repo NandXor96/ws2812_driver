@@ -1,0 +1,299 @@
+/**
+ * @file main.c                                                                *
+ * @brief User program to demonstrate user library and kernel module.          *
+ * @date  Wednesday 24th-January-2024                                          *
+ * Document class: public                                                      *
+ * (c) 2024 Erik Appel, Kristian Mindere, https://git.fh-muenster.de           *
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdint.h>
+#include <errno.h>
+#include <string.h>
+#include "usb_ws2812_lib.h"
+
+int led_count = 50;
+int fd;
+
+void print_buf(char *buf, int len)
+{
+	for (int i = 0; i < len; i++) {
+		printf("%02X ", buf[i]);
+	}
+}
+
+void clear_leds()
+{
+	ws2812_clear(fd);
+}
+
+void send_len(uint16_t len)
+{
+	ws2812_set_length(fd, len);
+}
+
+void send_pixel_data(uint16_t offset, uint16_t len, led_pixel *pixel)
+{
+	ws2812_set_led_pixel(fd, offset, len, pixel);
+}
+
+void send_mode_static()
+{
+	ws2812_set_mode_static(fd);
+}
+
+uint16_t send_get_len()
+{
+	int len = ws2812_get_length(fd);
+	return len;
+}
+
+void send_get_mode()
+{
+	led_set_mode mode;
+	int mode_id = ws2812_get_mode(fd, &mode);
+	if (mode_id < 0) {
+		printf("get_mode encountered a problem: %s\n", strerror(errno));
+	}
+
+	switch (mode_id) {
+	case CHAR_LED_MODE_STATIC:
+		printf("Mode: static\n");
+		break;
+	case CHAR_LED_MODE_BLINK:
+		printf("Mode: blink{patter_count = %d, pattern_len = %d, blink_period = %d}\n",
+		       mode.set_blink.pattern_count, mode.set_blink.pattern_len,
+		       mode.set_blink.blink_period);
+		break;
+	default:
+		break;
+	}
+}
+
+void send_get_pixel_data()
+{
+	uint16_t pixel_count = send_get_len();
+	ws2812_pixel_buffer pixel_buf = {
+		.length = pixel_count,
+		.pixel_data = malloc(pixel_count * sizeof(led_pixel))
+	};
+
+	if (pixel_buf.pixel_data == NULL) {
+		printf("Faild to alloc pixelbuffer!\n");
+		return;
+	}
+
+	int error = ws2812_get_data(fd, &pixel_buf);
+	if (error < 0) {
+		printf("ws2812_get_data encountered a problem: %s\n",
+		       strerror(errno));
+		return;
+	}
+	printf("Got %d led pixel:\n", pixel_buf.length);
+	led_pixel *pixe_data = pixel_buf.pixel_data;
+	for (int i = 0; i < pixel_buf.length; i++) {
+		printf("Pixel[%03d]{r = %x, g = %x, b = %x}\n", i,
+		       pixe_data[i].red, pixe_data[i].green, pixe_data[i].blue);
+	}
+	free(pixel_buf.pixel_data);
+}
+
+void send_get_mode_pixel_data()
+{
+	uint16_t pixel_count = ws2812_get_mode_data_length(fd);
+	ws2812_pixel_buffer pixel_buf = {
+		.length = pixel_count,
+		.pixel_data = malloc(pixel_count * sizeof(led_pixel))
+	};
+
+	if (pixel_buf.pixel_data == NULL) {
+		printf("Faild to alloc pixelbuffer!\n");
+		return;
+	}
+
+	int error = ws2812_get_mode_data(fd, &pixel_buf);
+	if (error < 0) {
+		printf("ws2812_get_mode_data encountered a problem: %s\n",
+		       strerror(errno));
+		return;
+	}
+	printf("Got %d led pixel:\n", pixel_buf.length);
+	led_pixel *pixe_data = pixel_buf.pixel_data;
+	for (int i = 0; i < pixel_buf.length; i++) {
+		printf("Pixel[%03d]{r = %x, g = %x, b = %x}\n", i,
+		       pixe_data[i].red, pixe_data[i].green, pixe_data[i].blue);
+	}
+	free(pixel_buf.pixel_data);
+}
+
+void send_get_type(int type)
+{
+	led_get_data get_data = {
+		.ctrl = CHAR_LED_GET_DATA,
+		.data_type = type,
+		.p_len = 3,
+	};
+	write(fd, &get_data, sizeof(led_get_data));
+	char buf[64];
+	int r_count = read(fd, buf, 64);
+	printf("got %d bytes form device\n", r_count);
+	for (int i = 0; i < r_count; i++) {
+		printf("0x%x ", buf[i]);
+	}
+	puts("\n");
+}
+
+void send_mode_blink(uint16_t period)
+{
+	ws2812_set_mode_blink(fd, 3, 1, period);
+
+	led_pixel pattern_data[3];
+	pattern_data[0] = (led_pixel){ 0x41, 0, 0 };
+	pattern_data[1] = (led_pixel){ 0, 0x41, 0 };
+	pattern_data[2] = (led_pixel){ 0, 0, 0x41 };
+
+	ws2812_pattern pattern = {
+		.length = 1,
+		.pattern_states = 3,
+		.pattern_data = pattern_data,
+	};
+
+	ws2812_set_blink_pattern(fd, &pattern);
+}
+
+void send_mode_blink_2(uint16_t period)
+{
+	ws2812_set_mode_blink(fd, 3, 3, period);
+
+	led_pixel pattern_data[9];
+	pattern_data[0] = (led_pixel){ 0x41, 0, 0 };
+	pattern_data[1] = (led_pixel){ 0, 0x41, 0 };
+	pattern_data[2] = (led_pixel){ 0, 0, 0x41 };
+
+	pattern_data[3] = (led_pixel){ 0, 0x41, 0 };
+	pattern_data[4] = (led_pixel){ 0, 0, 0x41 };
+	pattern_data[5] = (led_pixel){ 0x41, 0, 0 };
+
+	pattern_data[6] = (led_pixel){ 0, 0, 0x41 };
+	pattern_data[7] = (led_pixel){ 0x41, 0, 0 };
+	pattern_data[8] = (led_pixel){ 0, 0x41, 0 };
+
+	ws2812_pattern pattern = {
+		.length = 3,
+		.pattern_states = 3,
+		.pattern_data = pattern_data,
+	};
+
+	ws2812_set_blink_pattern(fd, &pattern);
+}
+
+void test_device()
+{
+	char send_buf[64];
+	char read_buf[64];
+	/**
+	 * Länge schicken
+	 */
+
+	send_len(led_count);
+
+	if (!strcmp(send_buf, read_buf)) {
+		printf("Successfully sent Length of %d\n\n", led_count);
+	}
+
+	/**
+	 * LED-Datenpaket schicken
+	 */
+
+	led_pixel *pixel = malloc(sizeof(led_pixel) * led_count);
+	led_pixel pattern[3];
+	pattern[0] = (led_pixel){ 0x41, 0, 0 };
+	pattern[1] = (led_pixel){ 0, 0x41, 0 };
+	pattern[2] = (led_pixel){ 0, 0, 0x41 };
+	for (int i = 0; i < led_count; i++) {
+		pixel[i] = pattern[i % 3];
+	}
+
+	send_pixel_data(0, led_count, pixel);
+}
+
+int main(int argc, char **argv)
+{
+	fd = open("/dev/usb_ws2812_0", O_RDWR);
+	if (fd < 0) {
+		printf("Unable to open device file\n");
+		return 0;
+	}
+	ws2812_init();
+	if (argc > 1) {
+		if (argc > 2) {
+			if (strcmp(argv[1], "-len") == 0) {
+				printf("Test \n");
+				led_count = atoi(argv[2]);
+				send_len(led_count);
+			} else if (strcmp(argv[1], "-get") == 0) {
+				int requset_type = atoi(argv[2]);
+				printf("send get(%d)\n", requset_type);
+				send_get_type(requset_type);
+			} else if (strcmp(argv[1], "-test") == 0) {
+				led_count = atoi(argv[2]);
+				test_device();
+			} else if (strcmp(argv[1], "-red") == 0) {
+				int len = atoi(argv[2]);
+				int offset = 0;
+				if (argc > 3) {
+					offset = atoi(argv[3]);
+				}
+				led_count = offset + len;
+				printf("Setzte leds von %d bis %d auf Rot\n",
+				       offset, led_count);
+				send_len(led_count);
+
+				led_pixel *pixel =
+					malloc(sizeof(led_pixel) * len);
+				for (int i = 0; i < len; i++) {
+					pixel[i] = (led_pixel){ 0x41, 0,
+								0 }; // Rot
+				}
+
+				send_pixel_data(offset, len, pixel);
+			} else if (strcmp(argv[1], "-mode") == 0) {
+				if (strcmp(argv[2], "static") == 0) {
+					send_mode_static();
+				} else if (strcmp(argv[2], "blink") == 0) {
+					uint16_t periode = 1000;
+					if (argc > 3) {
+						periode = atoi(argv[3]);
+					}
+					send_mode_blink(periode);
+				} else if (strcmp(argv[2], "blink2") == 0) {
+					uint16_t periode = 1000;
+					if (argc > 3) {
+						periode = atoi(argv[3]);
+					}
+					send_mode_blink_2(periode);
+				}
+			}
+		} else if (strcmp(argv[1], "-get_len") == 0) {
+			int pixelcount = send_get_len();
+			printf("Länge: %d\n", pixelcount);
+		} else if (strcmp(argv[1], "-get_mode") == 0) {
+			send_get_mode();
+
+		} else if (strcmp(argv[1], "-get_data") == 0) {
+			send_get_pixel_data();
+		} else if (strcmp(argv[1], "-get_mode_data") == 0) {
+			send_get_mode_pixel_data();
+		}
+	} else {
+		test_device();
+	}
+	ws2812_deinit();
+	close(fd);
+}
